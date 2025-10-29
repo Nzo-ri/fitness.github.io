@@ -1,0 +1,8 @@
+{
+  "colorePrimario": "#008CBA",
+  "messaggioSaluto": "Benvenuto!",
+  "dizionario": {
+    "hello": "Ciao",
+    "goodbye": "Arrivederci"
+  }
+}
