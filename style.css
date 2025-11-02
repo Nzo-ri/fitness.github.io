@@ -57,3 +57,44 @@ body {
       color: white;
       margin-top: 30px;
     }
+    label {
+      margin-right: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: left;
+    }
+
+    h2 {
+      color: #0078d7;
+    }
+    select, input,textarea {
+      margin: 5px;
+      padding: 5px;
+    }
+    section button {
+      padding: 8px 15px;
+      margin-top: 10px;
+      cursor: pointer;
+      background-color: #0078d7;
+      border: none;
+      color: white;
+      border-radius: 5px;
+    }
+
+    section button:hover {
+      background-color: #005fa3;
+    }
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      resize: vertical;
+      font-family: Arial, sans-serif;
+    }
