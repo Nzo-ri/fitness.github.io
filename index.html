@@ -1,66 +1,695 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fitness Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schede Esercizi — Completa (Locale)</title>
+
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --card: #fff;
+      --accent: #0ea5a4;
+      --muted: #6b7280;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: #0f172a;
+    }
+    header {
+      background: linear-gradient(90deg, #0ea5a4, #7dd3fc);
+      color: white;
+      padding: 14px 20px;
+    }
+    header h1 { margin:0; font-size:18px; }
+    header .muted { font-size:13px; margin-top:6px; color: #e6f8fb; }
+
+    .wrap { max-width:1100px; margin:18px auto; padding:12px; }
+    .grid { display:grid; grid-template-columns:360px 1fr; gap:16px; }
+    .card { background:var(--card); border-radius:12px; padding:14px; box-shadow:0 6px 18px rgba(2,6,23,0.06); }
+
+    label { display:block; font-size:13px; color:var(--muted); margin-top:10px; }
+    input[type=text], input[type=file], textarea, select {
+      width:100%; padding:8px; border-radius:8px; border:1px solid #e6eef6; margin-top:6px;
+      font-size:14px;
+    }
+    button { background:var(--accent); color:white; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    button.small { font-size:13px; padding:6px 8px; margin-left:6px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .list-scroll { max-height:300px; overflow:auto; margin-top:8px; }
+    ul { margin:0; padding:0; list-style:none; }
+
+    .exercise-item {
+      display:flex; justify-content:space-between; align-items:center; padding:8px 6px; border-bottom:1px solid #eef6fb;
+    }
+    .exercise-preview { display:flex; gap:10px; align-items:center; }
+    .exercise-preview img { width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #e6eef6; }
+
+    .chip { background:#e6f6fb; padding:6px 10px; border-radius:999px; cursor:pointer; margin-bottom:6px; display:inline-block; }
+    .day { border:1px dashed #e6eef6; padding:8px; border-radius:10px; margin-top:10px; background:#fff; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { border:1px solid #e6eef6; padding:8px; text-align:left; vertical-align:middle; font-size:13px; }
+    td img.small { width:60px; height:60px; object-fit:cover; border-radius:6px; }
+
+    .btn-icon { background:transparent; border:0; cursor:pointer; padding:6px; border-radius:6px; }
+    .btn-icon:hover { background:#f3f4f6; }
+
+    /* Modal */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:50; }
+    .modal { background:white; width:min(860px,95%); max-height:88vh; overflow:auto; border-radius:12px; padding:14px; box-shadow:0 12px 32px rgba(2,6,23,0.3); }
+    .modal h3 { margin-top:0; }
+    .modal .modal-grid { display:flex; gap:12px; }
+    .modal .left { width:340px; }
+    .modal .right { flex:1; }
+
+    /* small helpers */
+    .muted-sm { color:var(--muted); font-size:12px; }
+    .danger { background:var(--danger); color:white; padding:6px 8px; border-radius:6px; border:0; cursor:pointer; }
+
+    footer { max-width:1100px; margin:18px auto; text-align:center; color:var(--muted); font-size:13px; }
+  </style>
+
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <header>
-    <h1>Fitness Generator</h1>
+    <div style="max-width:1100px;margin:0 auto">
+      <h1>Schede Esercizi — Locale</h1>
+      <div class="muted">Immagini compresse in base64 · gestione completa · modale ricerca</div>
+    </div>
   </header>
 
-  <nav>
-    <button onclick="mostraSezione('home')">Home</button>
-    <button onclick="mostraSezione('crea_Scheda')">Crea Scheda</button>
-    <button onclick="mostraSezione('aggiungi_esercizi')">Aggiungi esercizi</button>
-  </nav>
+  <main class="wrap">
+    <div class="grid">
+      <!-- Left: gestione esercizi -->
+      <section class="card">
+        <h2>Esercizi</h2>
+        <label>Nome</label>
+        <input id="ex-name" type="text" placeholder="Panca piana">
+        <label>Distretto / Gruppo</label>
+        <input id="ex-group" type="text" placeholder="Petto">
+        <label>Note</label>
+        <input id="ex-notes" type="text" placeholder="Esempio: con bilanciere">
+        <label>Immagine (facoltativa)</label>
+        <input id="ex-img" type="file" accept="image/*">
 
-  <main>
-    <section id="home" class="active">
-      <h2>Benvenuto!</h2>
-      <p>Questa è la sezione Home. Qui puoi presentare il tuo sito, la tua azienda o te stesso.</p>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae eros at est egestas luctus.</p>
-    </section>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="add-ex">Aggiungi</button>
+          <button id="export-json" class="small">Esporta DB</button>
+          <button id="import-json" class="small">Importa</button>
+          <input id="file-input" type="file" accept="application/json" style="display:none">
+        </div>
 
-    <section id="crea_Scheda">
-      <label for="esercizio">Esercizio:</label>
-      <select id="esercizio">
-        <option value="">-- Seleziona Esercizio --</option>
-        <option value="Squat">Squat</option>
-        <option value="Curl">Curl</option>
-        <option value="Pulley">Pulley</option>
-      </select>
+        <hr style="margin:12px 0">
 
-      <label for="ripetizioni">Ripetizioni:</label>
-      <input type="number" id="ripetizioni" min="1" value="1">
-      <br>
-      <button onclick="aggiungiRiga()">Aggiungi alla tabella</button>
-      <button onclick="scaricaPDF()">Scarica PDF</button>
-      <textarea id="note" placeholder="Inserisci eventuali note, commenti o dettagli..."></textarea>
-      <table id="tabella">
-    <thead>
-      <tr>
-        <th>Esercizio</th>
-        <th>Ripetizioni</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-    </section>  
+        <label>Cerca</label>
+        <input id="search-ex" placeholder="Cerca per nome o distretto...">
+        <label>Filtra per distretto</label>
+        <select id="filter-group"><option value="">Tutti</option></select>
 
-    <section id="aggiungi_esercizi">
-      <button onclick="aggiungiEsercizio()">➕ Aggiungi nuovo esercizio</button>
-  <br>
+        <div class="list-scroll">
+          <ul id="ex-list"></ul>
+        </div>
+      </section>
+
+      <!-- Right: schede -->
+      <section class="card">
+        <h2>Schede</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="sheet-name" placeholder="Nome scheda">
+          <button id="create-sheet">Crea</button>
+        </div>
+
+        <div id="sheets" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        <hr>
+
+        <div id="sheet-area" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 id="sheet-title"></h3>
+            <div>
+              <button id="delete-sheet" class="small danger">Elimina scheda</button>
+            </div>
+          </div>
+
+          <label>Note iniziali</label>
+          <textarea id="sheet-notes" rows="3" placeholder="Obiettivi, istruzioni..."></textarea>
+
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <input id="day-name" placeholder="Nome giornata (es: Giorno 1 - Petto)">
+            <button id="add-day">Aggiungi giornata</button>
+          </div>
+
+          <div id="days"></div>
+
+          <div class="controls">
+            <button id="export-pdf">Esporta PDF</button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
+  <!-- Modal: ricerca / selezione esercizio -->
+  <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="modal-title">Aggiungi esercizio alla giornata</h3>
+        <div><button id="modal-close" class="btn-icon" title="Chiudi">✖</button></div>
+      </div>
+
+      <div class="modal-grid" style="margin-top:10px">
+        <div class="left">
+          <label>Cerca</label>
+          <input id="modal-search" type="text" placeholder="Cerca esercizio...">
+          <div class="list-scroll" style="margin-top:8px">
+            <ul id="modal-list" style="padding:0;margin:0;list-style:none"></ul>
+          </div>
+        </div>
+
+        <div class="right">
+          <div id="modal-preview" style="min-height:120px">
+            <div class="muted-sm">Seleziona un esercizio a sinistra per vedere anteprima e inserire parametri.</div>
+          </div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="modal-sets" placeholder="Serie" style="width:90px">
+            <input id="modal-reps" placeholder="Ripetizioni" style="width:100px">
+            <input id="modal-rest" placeholder="Recupero (s)" style="width:120px">
+            <input id="modal-notes" placeholder="Note" style="flex:1">
+            <button id="modal-add" class="small">Aggiungi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer>
-    
+    <div class="muted">💾 Tutto salvato in <strong>localStorage</strong>. Usa Esporta/Importa DB per backup.</div>
   </footer>
 
-  <script src="codice.js"></script>
+  <script>
+    // app.js — versione completa con CRUD e modale di ricerca
+// Salva entrambi i file nella stessa cartella e apri index.html
+
+/* ========== Config & DB ========== */
+const STORAGE_KEY = 'schede_esercizi_db_v1';
+let DB = { exercises: [], sheets: [] };
+let currentSheetIndex = null;
+let currentModalDayIndex = null;
+let currentModalSelectedExerciseId = null;
+
+/* ========== Helpers ========== */
+function saveLocal() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+}
+function loadLocal() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { DB = JSON.parse(raw); } catch (e) { console.warn('DB parse error', e); DB = { exercises: [], sheets: [] }; }
+  }
+}
+function uid(prefix = 'id') { return prefix + Math.random().toString(36).slice(2,9); }
+function escapeHtml(s) { return s ? (''+s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : ''; }
+
+/* ========== Image compress (base64) ========== */
+function fileToDataUrl(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+async function compressToJpegDataUrl(fileOrDataUrl, maxWidth = 300, quality = 0.5) {
+  // accepts File or dataURL
+  const img = new Image();
+  const src = (fileOrDataUrl instanceof File) ? await fileToDataUrl(fileOrDataUrl) : fileOrDataUrl;
+  return new Promise((res, rej) => {
+    img.onload = () => {
+      const ratio = img.width / img.height || 1;
+      const targetW = Math.min(maxWidth, img.width);
+      const targetH = Math.round(targetW / ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      try {
+        const out = canvas.toDataURL('image/jpeg', quality);
+        res(out);
+      } catch (e) { rej(e); }
+    };
+    img.onerror = rej;
+    img.src = src;
+  });
+}
+
+/* ========== DOM refs ========== */
+const el = id => document.getElementById(id);
+
+const exList = el('ex-list');
+const exName = el('ex-name');
+const exGroup = el('ex-group');
+const exNotes = el('ex-notes');
+const exImg = el('ex-img');
+const searchEx = el('search-ex');
+const filterGroup = el('filter-group');
+
+const sheetsWrap = el('sheets');
+const createSheetBtn = el('create-sheet');
+const sheetNameInput = el('sheet-name');
+const sheetArea = el('sheet-area');
+const sheetTitle = el('sheet-title');
+const sheetNotes = el('sheet-notes');
+const daysDiv = el('days');
+
+const addExBtn = el('add-ex');
+const exportJsonBtn = el('export-json');
+const importJsonBtn = el('import-json');
+const fileInput = el('file-input');
+
+const addDayBtn = el('add-day');
+const dayNameInput = el('day-name');
+const deleteSheetBtn = el('delete-sheet');
+const exportPdfBtn = el('export-pdf');
+
+/* Modal elements */
+const modalBackdrop = el('modal-backdrop');
+const modalClose = el('modal-close');
+const modalSearch = el('modal-search');
+const modalList = el('modal-list');
+const modalPreview = el('modal-preview');
+const modalSets = el('modal-sets');
+const modalReps = el('modal-reps');
+const modalRest = el('modal-rest');
+const modalNotes = el('modal-notes');
+const modalAdd = el('modal-add');
+
+/* ========== Render functions ========== */
+function renderFilterOptions() {
+  const groups = Array.from(new Set(DB.exercises.map(e => e.group).filter(Boolean))).sort();
+  filterGroup.innerHTML = '<option value="">Tutti</option>';
+  groups.forEach(g => {
+    const o = document.createElement('option'); o.value = g; o.textContent = g; filterGroup.appendChild(o);
+  });
+}
+
+function renderExercises() {
+  exList.innerHTML = '';
+  const q = (searchEx.value || '').toLowerCase();
+  const g = filterGroup.value;
+  const list = DB.exercises.filter(e => (!g || e.group === g) && (e.name.toLowerCase().includes(q) || (e.group||'').toLowerCase().includes(q)));
+  if (!list.length) {
+    exList.innerHTML = '<div class="muted">Nessun esercizio</div>';
+    return;
+  }
+  list.forEach(ex => {
+    const li = document.createElement('li'); li.className = 'exercise-item';
+    const previewHtml = `
+      <div class="exercise-preview">
+        ${ex.image ? `<img src="${ex.image}" alt="${escapeHtml(ex.name)}">` : `<div style="width:64px;height:64px;border-radius:8px;background:#f3f4f6"></div>`}
+        <div><strong>${escapeHtml(ex.name)}</strong><div class="muted-sm">${escapeHtml(ex.group || '')}</div><div class="muted-sm">${escapeHtml(ex.notes||'')}</div></div>
+      </div>
+    `;
+    const actionsDiv = document.createElement('div');
+
+    // Use button (adds to last day)
+    const useBtn = document.createElement('button'); useBtn.className='small'; useBtn.textContent='Usa';
+    useBtn.onclick = () => {
+      if (currentSheetIndex === null) return alert('Apri una scheda prima');
+      const sheet = DB.sheets[currentSheetIndex];
+      if (!sheet.days.length) return alert('Aggiungi prima una giornata');
+      const lastDay = sheet.days[sheet.days.length - 1];
+      // quick prompts
+      const sets = prompt('Serie (es: 3):', '3');
+      if (sets === null) return;
+      const reps = prompt('Ripetizioni (es: 10):', '10');
+      if (reps === null) return;
+      const rest = prompt('Recupero (sec):', '60');
+      if (rest === null) return;
+      const notes = prompt('Note (opzionale):', '');
+      lastDay.exercises.push({ id: uid('r_'), exId: ex.id, name: ex.name, image: ex.image || '', sets, reps, rest, notes });
+      saveLocal(); renderDays();
+    };
+
+    // Edit exercise meta
+    const editBtn = document.createElement('button'); editBtn.className='btn-icon'; editBtn.title='Modifica esercizio'; editBtn.innerHTML='✎';
+    editBtn.onclick = () => {
+      const name = prompt('Nome esercizio:', ex.name);
+      if (name === null) return;
+      const group = prompt('Gruppo:', ex.group||'');
+      if (group === null) return;
+      const notes = prompt('Note:', ex.notes||'');
+      if (notes === null) return;
+      ex.name = name; ex.group = group; ex.notes = notes;
+      saveLocal(); renderExercises(); renderFilterOptions(); renderDays();
+    };
+
+    // Delete exercise
+    const delBtn = document.createElement('button'); delBtn.className='btn-icon'; delBtn.title='Elimina esercizio'; delBtn.innerHTML='🗑️';
+    delBtn.onclick = () => {
+      if (!confirm('Eliminare esercizio dal DB?')) return;
+      // remove from exercises and remove references in sheets
+      DB.exercises = DB.exercises.filter(e => e.id !== ex.id);
+      DB.sheets.forEach(s => {
+        s.days.forEach(d => { d.exercises = d.exercises.filter(r => r.exId !== ex.id); });
+      });
+      saveLocal(); renderExercises(); renderDays(); renderFilterOptions(); renderSheets();
+    };
+
+    actionsDiv.appendChild(useBtn);
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(delBtn);
+
+    li.innerHTML = previewHtml;
+    li.appendChild(actionsDiv);
+    exList.appendChild(li);
+  });
+}
+
+function renderSheets() {
+  sheetsWrap.innerHTML = '';
+  DB.sheets.forEach((s, idx) => {
+    const btn = document.createElement('div'); btn.className='chip'; btn.textContent = s.name;
+    // small edit & delete icons
+    const edit = document.createElement('button'); edit.className='btn-icon'; edit.title='Modifica nome scheda'; edit.innerHTML='✎';
+    edit.onclick = (ev) => {
+      ev.stopPropagation();
+      const nn = prompt('Nuovo nome scheda:', s.name);
+      if (nn === null) return;
+      s.name = nn; saveLocal(); renderSheets(); if (currentSheetIndex === idx) el('sheet-title').textContent = s.name;
+    };
+    const del = document.createElement('button'); del.className='btn-icon'; del.title='Elimina scheda'; del.innerHTML='🗑️';
+    del.onclick = (ev) => {
+      ev.stopPropagation();
+      if (!confirm('Eliminare scheda e tutti i dati al suo interno?')) return;
+      DB.sheets = DB.sheets.filter((_,i)=>i!==idx);
+      if (currentSheetIndex === idx) { currentSheetIndex = null; sheetArea.style.display = 'none'; }
+      saveLocal(); renderSheets(); renderDays();
+    };
+    btn.appendChild(edit); btn.appendChild(del);
+    btn.onclick = () => { currentSheetIndex = idx; openSheet(idx); };
+    sheetsWrap.appendChild(btn);
+  });
+  if (!DB.sheets.length) sheetsWrap.innerHTML = '<div class="muted">Nessuna scheda</div>';
+}
+
+function openSheet(idx) {
+  currentSheetIndex = idx;
+  const s = DB.sheets[idx];
+  sheetArea.style.display = 'block';
+  sheetTitle.textContent = s.name;
+  sheetNotes.value = s.notes || '';
+  renderDays();
+}
+
+function renderDays() {
+  daysDiv.innerHTML = '';
+  if (currentSheetIndex === null) return;
+  const s = DB.sheets[currentSheetIndex];
+  s.days.forEach((day, dayIdx) => {
+    const d = document.createElement('div'); d.className='day';
+    // header with edit & delete & add-row (modal)
+    const header = document.createElement('div'); header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
+    const title = document.createElement('strong'); title.textContent = day.name;
+    const actions = document.createElement('div');
+
+    const addBtn = document.createElement('button'); addBtn.className='small'; addBtn.textContent='Aggiungi esercizio';
+    addBtn.onclick = () => { openModalForDay(dayIdx); };
+
+    const editDayBtn = document.createElement('button'); editDayBtn.className='btn-icon'; editDayBtn.title='Modifica nome giornata'; editDayBtn.innerHTML='✎';
+    editDayBtn.onclick = () => {
+      const nn = prompt('Nome giornata:', day.name);
+      if (nn === null) return;
+      day.name = nn; saveLocal(); renderDays();
+    };
+
+    const delDayBtn = document.createElement('button'); delDayBtn.className='btn-icon'; delDayBtn.title='Elimina giornata'; delDayBtn.innerHTML='🗑️';
+    delDayBtn.onclick = () => {
+      if (!confirm('Eliminare giornata?')) return;
+      DB.sheets[currentSheetIndex].days.splice(dayIdx, 1); saveLocal(); renderDays();
+    };
+
+    actions.appendChild(addBtn); actions.appendChild(editDayBtn); actions.appendChild(delDayBtn);
+    header.appendChild(title); header.appendChild(actions);
+
+    d.appendChild(header);
+
+    // table of rows
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Esercizio</th><th>Img</th><th>Serie</th><th>Ripetizioni</th><th>Recupero (s)</th><th>Note</th><th>Azioni</th></tr>';
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+
+    day.exercises.forEach((row, rowIdx) => {
+      const tr = document.createElement('tr');
+      const tdName = document.createElement('td'); tdName.textContent = row.name;
+      const tdImg = document.createElement('td'); tdImg.style.width='120px';
+      if (row.image) { const im = document.createElement('img'); im.src = row.image; im.className='small'; tdImg.appendChild(im); } else tdImg.textContent = '-';
+
+      const tdSets = document.createElement('td'); tdSets.textContent = row.sets || '';
+      const tdReps = document.createElement('td'); tdReps.textContent = row.reps || '';
+      const tdRest = document.createElement('td'); tdRest.textContent = row.rest || '';
+      const tdNotes = document.createElement('td'); tdNotes.textContent = row.notes || '';
+
+      const tdActions = document.createElement('td');
+      // edit row
+      const editRowBtn = document.createElement('button'); editRowBtn.className='small'; editRowBtn.textContent='✎';
+      editRowBtn.onclick = () => {
+        const sets = prompt('Serie:', row.sets||'') ; if (sets === null) return;
+        const reps = prompt('Ripetizioni:', row.reps||''); if (reps === null) return;
+        const rest = prompt('Recupero (s):', row.rest||''); if (rest === null) return;
+        const notes = prompt('Note:', row.notes||''); if (notes === null) return;
+        row.sets = sets; row.reps = reps; row.rest = rest; row.notes = notes;
+        saveLocal(); renderDays();
+      };
+      // delete row
+      const delRowBtn = document.createElement('button'); delRowBtn.className='small'; delRowBtn.textContent='🗑️';
+      delRowBtn.onclick = () => {
+        if (!confirm('Eliminare questa riga?')) return;
+        day.exercises.splice(rowIdx,1); saveLocal(); renderDays();
+      };
+
+      tdActions.appendChild(editRowBtn); tdActions.appendChild(delRowBtn);
+
+      tr.appendChild(tdName); tr.appendChild(tdImg); tr.appendChild(tdSets); tr.appendChild(tdReps); tr.appendChild(tdRest); tr.appendChild(tdNotes); tr.appendChild(tdActions);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    d.appendChild(table);
+
+    daysDiv.appendChild(d);
+  });
+
+  if (s.days.length === 0) {
+    daysDiv.innerHTML = '<div class="muted">Nessuna giornata. Aggiungi una giornata per cominciare.</div>';
+  }
+}
+
+/* ========== Add / Edit / Delete high level ========== */
+addExBtn.onclick = async () => {
+  const name = exName.value.trim();
+  if (!name) return alert('Nome esercizio richiesto');
+  const group = exGroup.value.trim();
+  const notes = exNotes.value.trim();
+  const file = exImg.files && exImg.files[0];
+  let img = '';
+  if (file) {
+    try { img = await compressToJpegDataUrl(file, 300, 0.5); } catch (e) { console.warn('compress fail', e); img = await fileToDataUrl(file); }
+  }
+  DB.exercises.push({ id: uid('ex_'), name, group, notes, image: img });
+  saveLocal();
+  exName.value = exGroup.value = exNotes.value = ''; exImg.value = '';
+  renderFilterOptions(); renderExercises();
+};
+
+createSheetBtn.onclick = () => {
+  const name = sheetNameInput.value.trim();
+  if (!name) return alert('Nome scheda richiesto');
+  DB.sheets.push({ id: uid('s_'), name, notes: '', days: [] });
+  saveLocal();
+  sheetNameInput.value = '';
+  renderSheets();
+};
+
+/* sheet delete handled on renderSheets as del button attached */
+
+addDayBtn.onclick = () => {
+  if (currentSheetIndex === null) return alert('Seleziona o crea prima una scheda');
+  const name = dayNameInput.value.trim();
+  if (!name) return alert('Nome giornata richiesto');
+  DB.sheets[currentSheetIndex].days.push({ id: uid('d_'), name, exercises: [] });
+  saveLocal();
+  dayNameInput.value = '';
+  renderDays();
+};
+
+sheetNotes.addEventListener('input', (e) => {
+  if (currentSheetIndex === null) return;
+  DB.sheets[currentSheetIndex].notes = e.target.value;
+  saveLocal();
+});
+
+/* ========== Modal: search & add to day ========== */
+function openModalForDay(dayIndex) {
+  if (currentSheetIndex === null) return alert('Seleziona una scheda prima');
+  currentModalDayIndex = dayIndex;
+  currentModalSelectedExerciseId = null;
+  modalBackdrop.style.display = 'flex';
+  modalSearch.value = '';
+  modalList.innerHTML = '';
+  modalPreview.innerHTML = '<div class="muted-sm">Seleziona un esercizio a sinistra</div>';
+  modalSets.value = '';
+  modalReps.value = '';
+  modalRest.value = '';
+  modalNotes.value = '';
+  renderModalList();
+}
+
+function closeModal() {
+  modalBackdrop.style.display = 'none';
+  currentModalDayIndex = null;
+  currentModalSelectedExerciseId = null;
+}
+
+modalClose.onclick = closeModal;
+modalBackdrop.onclick = (e) => { if (e.target === modalBackdrop) closeModal(); };
+
+function renderModalList() {
+  const q = (modalSearch.value || '').toLowerCase();
+  modalList.innerHTML = '';
+  const list = DB.exercises.filter(e => e.name.toLowerCase().includes(q) || (e.group||'').toLowerCase().includes(q));
+  if (!list.length) { modalList.innerHTML = '<div class="muted-sm">Nessun esercizio</div>'; return; }
+  list.forEach(ex => {
+    const li = document.createElement('li'); li.style.padding = '6px'; li.style.display='flex'; li.style.justifyContent='space-between'; li.style.alignItems='center';
+    li.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><img src="${ex.image||''}" style="width:52px;height:52px;object-fit:cover;border-radius:6px"><div><strong>${escapeHtml(ex.name)}</strong><div class="muted-sm">${escapeHtml(ex.group||'')}</div></div></div>`;
+    const pick = document.createElement('button'); pick.className='small'; pick.textContent='Seleziona';
+    pick.onclick = () => {
+      currentModalSelectedExerciseId = ex.id;
+      modalPreview.innerHTML = `
+        <div style="display:flex;gap:12px;align-items:center">
+          ${ex.image ? `<img src="${ex.image}" style="width:120px;height:120px;object-fit:cover;border-radius:8px">` : ''}
+          <div>
+            <h4 style="margin:0">${escapeHtml(ex.name)}</h4>
+            <div class="muted-sm">${escapeHtml(ex.group||'')}</div>
+            <div style="margin-top:8px">${escapeHtml(ex.notes||'')}</div>
+          </div>
+        </div>
+      `;
+      modalSets.value = '3'; modalReps.value = '10'; modalRest.value = '60';
+    };
+    li.appendChild(pick);
+    modalList.appendChild(li);
+  });
+}
+
+modalSearch.addEventListener('input', renderModalList);
+
+modalAdd.onclick = () => {
+  if (currentModalSelectedExerciseId === null) return alert('Seleziona un esercizio dalla lista');
+  const sets = modalSets.value.trim() || '';
+  const reps = modalReps.value.trim() || '';
+  const rest = modalRest.value.trim() || '';
+  const notes = modalNotes.value.trim() || '';
+  const ex = DB.exercises.find(x => x.id === currentModalSelectedExerciseId);
+  if (!ex) return alert('Esercizio non trovato');
+  const day = DB.sheets[currentSheetIndex].days[currentModalDayIndex];
+  day.exercises.push({ id: uid('r_'), exId: ex.id, name: ex.name, image: ex.image||'', sets, reps, rest, notes });
+  saveLocal();
+  renderDays();
+  closeModal();
+};
+
+/* ========== PDF export (table layout with images resized) ========== */
+async function exportSheetToPdf(sheet) {
+  const container = document.createElement('div');
+  container.style.fontFamily = 'Arial, Helvetica, sans-serif';
+  container.style.padding = '12px';
+  const title = document.createElement('h1'); title.textContent = sheet.name; container.appendChild(title);
+  if (sheet.notes) { const p = document.createElement('p'); p.textContent = sheet.notes; container.appendChild(p); }
+
+  for (const day of sheet.days) {
+    const dh = document.createElement('h2'); dh.textContent = day.name; container.appendChild(dh);
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr style="background:#f3f4f6"><th style="padding:6px;border:1px solid #ddd">Esercizio</th><th style="padding:6px;border:1px solid #ddd">Immagine</th><th style="padding:6px;border:1px solid #ddd">Serie</th><th style="padding:6px;border:1px solid #ddd">Ripetizioni</th><th style="padding:6px;border:1px solid #ddd">Recupero</th><th style="padding:6px;border:1px solid #ddd">Note</th></tr>';
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+
+    for (const row of day.exercises) {
+      const tr = document.createElement('tr');
+      const tdName = document.createElement('td'); tdName.textContent = row.name; tdName.style.padding='6px'; tdName.style.border='1px solid #ddd';
+      const tdImg = document.createElement('td'); tdImg.style.padding='6px'; tdImg.style.border='1px solid #ddd';
+      if (row.image) {
+        try {
+          const small = await compressToJpegDataUrl(row.image, 200, 0.6);
+          const img = document.createElement('img'); img.src = small; img.style.maxWidth='100px'; img.style.display='block';
+          tdImg.appendChild(img);
+        } catch (e) { console.warn('img resize fail', e); tdImg.textContent = '(img)'; }
+      } else tdImg.textContent = '-';
+      const tdSets = document.createElement('td'); tdSets.textContent = row.sets || ''; tdSets.style.padding='6px'; tdSets.style.border='1px solid #ddd';
+      const tdReps = document.createElement('td'); tdReps.textContent = row.reps || ''; tdReps.style.padding='6px'; tdReps.style.border='1px solid #ddd';
+      const tdRest = document.createElement('td'); tdRest.textContent = row.rest || ''; tdRest.style.padding='6px'; tdRest.style.border='1px solid #ddd';
+      const tdNotes = document.createElement('td'); tdNotes.textContent = row.notes || ''; tdNotes.style.padding='6px'; tdNotes.style.border='1px solid #ddd';
+      tr.appendChild(tdName); tr.appendChild(tdImg); tr.appendChild(tdSets); tr.appendChild(tdReps); tr.appendChild(tdRest); tr.appendChild(tdNotes);
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  const opt = { margin:10, filename: `${sheet.name.replace(/[^a-z0-9\\-\\_ ]/gi,'')}.pdf`, image:{ type:'jpeg', quality:0.92 }, html2canvas:{ scale:2 }, jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' } };
+  await html2pdf().set(opt).from(container).save();
+}
+
+exportPdfBtn.onclick = async () => {
+  if (currentSheetIndex === null) return alert('Seleziona prima una scheda');
+  const s = DB.sheets[currentSheetIndex];
+  await exportSheetToPdf(s);
+};
+
+/* ========== Export / Import JSON ========== */
+exportJsonBtn.onclick = () => {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'schede-db.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+importJsonBtn.onclick = () => fileInput.click();
+fileInput.onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const parsed = JSON.parse(r.result);
+      if (!parsed.exercises || !parsed.sheets) return alert('Formato JSON non valido');
+      DB = parsed;
+      saveLocal(); renderAll();
+      alert('Import completato');
+    } catch (err) { alert('Errore import: ' + err.message); }
+  };
+  r.readAsText(f);
+};
+
+/* ========== Render all / Init ========== */
+function renderAll() { renderFilterOptions(); renderExercises(); renderSheets(); if (currentSheetIndex !== null) openSheet(currentSheetIndex); }
+loadLocal(); renderAll();
+
+/* Accessibility: close modal on Esc */
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalBackdrop.style.display === 'flex') closeModal(); });
+
+  </script>
 </body>
 </html>
+
