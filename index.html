@@ -135,8 +135,8 @@
 
         <div style="display:flex;gap:8px;margin-top:10px">
           <button id="add-ex">Aggiungi</button>
-          <button id="export-json" class="small">Salva locale</button>
-          <button id="import-json" class="small">Importa locale</button>
+          <button id="export-json" class="small">Salva</button>
+          <button id="import-json" class="small">Importa esercizi</button>
           <input id="file-input" type="file" accept="application/json" style="display:none">
         </div>
 <!--
@@ -1104,7 +1104,7 @@ exportPdfBtn.onclick = async () => {
 };
 
 /* ========== Export / Import JSON ========== */
-/*
+
 exportJsonBtn.onclick = () => {
   const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'schede-db.json'; a.click(); URL.revokeObjectURL(a.href);
@@ -1125,6 +1125,7 @@ fileInput.onchange = (e) => {
   };
   r.readAsText(f);
 };
+/*
 async function loadExercisesFromJSONBin() {
   if (!JSONBIN_API_KEY) return;
   JSONBIN_BIN_ID = JSONBIN_BIN_ID || localStorage.getItem("jsonbin_exercises_id");
