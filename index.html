@@ -177,7 +177,7 @@
               <button id="delete-sheet" class="small danger">Elimina scheda</button>
             </div>
           </div>
-          <label>Obiettivi</label>
+          <label>Obiettivo</label>
           <textarea id="sheet-goals" rows="2" placeholder="Obiettivi della scheda..."></textarea>
 
           <label>Note iniziali</label>
@@ -985,7 +985,7 @@ logo.style.width = 'auto';
 logo.style.objectFit = 'contain';
 
 const title1 = document.createElement('div');
-title1.innerHTML = '<div style="font-weight:700;font-size:18px;margin-top:8px">PROGRAMMA DI ALLENAMENTO PERSONALIZZATO</div>';
+title1.innerHTML = '<div style="font-weight:700;font-size:20px;margin-top:8px">PROGRAMMA DI ALLENAMENTO PERSONALIZZATO</div>';
 
 
 
@@ -993,14 +993,14 @@ title1.innerHTML = '<div style="font-weight:700;font-size:18px;margin-top:8px">P
 const goalsDiv = document.createElement('div');
 goalsDiv.style.marginBottom = '8px';
 goalsDiv.align = 'center';
-goalsDiv.innerHTML = `<strong>Obiettivi:</strong> ${escapeHtml(sheet.goals || '')}`;
+goalsDiv.innerHTML = `<strong>Obiettivo:</strong> ${escapeHtml(sheet.goals || '')}`;
 
 
 // Nome scheda (titolo sotto il logo)
 const title = document.createElement('h1');
 title.textContent = sheet.name;
 title.style.margin = '0';
-title.style.fontSize = '20px';
+title.style.fontSize = '18px';
 title.style.fontWeight = 'bold';
 title.style.color = '#000'; // nero
 title.style.textAlign = 'center';
@@ -1075,8 +1075,7 @@ container.appendChild(goalsDiv);
           const small = await compressToJpegDataUrl(row.image, 180, 0.7);
           const img = document.createElement('img');
           img.src = small;
-          img.style.maxWidth = '120px';
-          img.style.maxheight = '80px';
+          img.className = 'exercise-img'
           tdImg.appendChild(img);
         } catch (e) {
           tdImg.textContent = '(img)';
@@ -1132,7 +1131,17 @@ container.appendChild(goalsDiv);
   const style = document.createElement('style');
   style.textContent = `
     table, tr, td, th { page-break-inside: avoid !important; }
-    h1, p { page-break-after: avoid; }`;
+    h1, p { page-break-after: avoid; }
+    img.exercise-img {
+    width: 120px;
+    height: 100px;
+    object-fit: contain;    /* mostra intera immagine */
+    background: #f9f9f9;    /* aggiunge sfondo neutro */
+    border-radius: 6px;
+    display: block;
+    margin: auto;
+  }
+    `;
   container.appendChild(style);
 
   // --- Generazione PDF ---
