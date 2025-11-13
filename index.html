@@ -958,15 +958,16 @@ modalAdd.onclick = () => {
 
 /* ========== PDF export (table layout with images resized) ========== */
 async function exportSheetToPdf(sheet) {
-    // 1) aggiungi temporaneamente il link a Google Fonts (Roboto)
+  // Aggiunge temporaneamente Roboto (o altro font)
   const fontLink = document.createElement('link');
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap';
   fontLink.rel = 'stylesheet';
-  fontLink.id = 'pdf-Montserrat-link';
+  fontLink.id = 'pdf-font-link';
   document.head.appendChild(fontLink);
 
   const container = document.createElement('div');
-  container.style.fontFamily = 'Montserrat, Verdana, sans-serif';
+  container.style.fontFamily = "Montserrat, sans-serif";
+  container.style.fontWeight = '500';
   container.style.padding = '12px';
 
 // === LOGO + TITOLO CENTRATI ===
@@ -1155,8 +1156,8 @@ container.appendChild(goalsDiv);
 
   await html2pdf().set(opt).from(container).save();
 
-  const existing = document.getElementById('pdf-roboto-link');
-  if (existing) existing.remove();
+  // Rimuove il font per non influenzare l'interfaccia web
+  document.getElementById('pdf-font-link')?.remove();
 }
 
 exportPdfBtn.onclick = async () => {
