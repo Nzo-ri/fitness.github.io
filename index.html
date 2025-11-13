@@ -1015,10 +1015,11 @@ container.appendChild(goalsDiv);
 
 
   // Note iniziali (con rispetto degli "a capo")
-  if (sheet.notes) {
-    const p = document.createElement('p');
-    p.innerHTML = sheet.notes.replace(/\n/g, '<br>');
-    container.appendChild(p);
+  if (sheet.notes && sheet.notes.trim()!== '') {
+    const pDiv = document.createElement('div');
+    pDiv.style.fontWeight = '400';
+    pDiv.innerHTML = sheet.notes.replace(/\n/g, '<br>');
+    container.appendChild(pDiv);
   }
 
   // --- Generazione tabelle per ogni giornata ---
@@ -1114,6 +1115,7 @@ container.appendChild(goalsDiv);
     const noteDiv = document.createElement('div');
     noteDiv.style.fontSize = '13px';
     noteDiv.style.marginTop = '4px';
+    noteDiv.style.fontWeight = '400';
     noteDiv.style.fontStyle = 'italic';
     noteDiv.textContent = 'Note: ' + day.note;
     table.appendChild(noteDiv);
@@ -1124,6 +1126,7 @@ container.appendChild(goalsDiv);
   if (sheet.finalNotes && sheet.finalNotes.trim() !== "") {
   const finalNotesDiv = document.createElement("div");
   finalNotesDiv.style.marginTop = "20px";
+  finalNotesDiv.style.fontWeight = '400';
   finalNotesDiv.innerHTML = sheet.finalNotes.replace(/\n/g, '<br>');
   container.appendChild(finalNotesDiv);
   }
