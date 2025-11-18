@@ -357,6 +357,8 @@ sheetFinalNotes.addEventListener('input', (e) => {
   DB.sheets[currentSheetIndex].finalNotes = e.target.value;
   saveLocal();
 });
+searchEx.addEventListener('input', renderExercises);
+filterGroup.addEventListener('change', renderExercises);
 
 /*
 document.getElementById("unlock-jsonbin").onclick = () => {
